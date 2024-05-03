@@ -1,8 +1,6 @@
 
 module GameOfLife
 
-using LinearAlgebra
-
 """
     Rules:
 
@@ -16,12 +14,12 @@ using LinearAlgebra
     Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
 """
 
-function game_of_life!(fields::Matrix{Int8},_iterations::UInt64)
+function game_of_life!(fields::Matrix{Bool})
     
     rows = size(fields, 1)
     columns = size(fields, 2)
-    new_fields = zeros(Int8, rows, columns)
-    cond = 0
+    new_fields = zeros(Bool, rows, columns)
+    cond::Int8 = 0
 
     # for _ in 1:1:iterations
 
@@ -176,27 +174,47 @@ function game_of_life!(fields::Matrix{Int8},_iterations::UInt64)
 
 end
 
-function play(iterations::UInt64)
-    rows::UInt8 = 20
-    columns::UInt8 = 20
-    fields = zeros(Int8, rows, columns)
+end # module GameOfLife
+
+
+
+using Plots
+using .GameOfLife: game_of_life!
+function play()
+
+    iterations::UInt64 = 20
+    rows::UInt8 = 40
+    columns::UInt8 = 40
+    fields = zeros(Bool, rows, columns)
+
     fields[9,9:11] .= 1
     fields[11,9:11] .= 1
     fields[10,12] = 1
     fields[10,8] = 1
-    for row in 1:rows
-        println(fields[row,1:columns])
+
+    h = heatmap(
+        fields,
+        xlim = (1,columns),
+        ylim = (1,rows),
+        legend = false,
+        aspect_ratio=1,
+        color = :thermal
+    )
+
+    display(h)
+
+    for _i=1:iterations
+        @time game_of_life!(fields)
+        heatmap!(
+            fields,
+            xlim = (1,columns),
+            ylim = (1,rows),
+            legend = false,
+            aspect_ratio=1,
+            color = :thermal
+        )
+        display(h)
     end
-    for _ in 1:1:iterations
-        @time game_of_life!(fields,iterations)
-        for row in 1:rows
-            println(fields[row,1:columns])
-        end
-    end
+
 end
-
-end # module GameOfLife
-
-using .GameOfLife: play
-iterations::UInt64 = 20
-@showtime play(iterations)
+@time play()
